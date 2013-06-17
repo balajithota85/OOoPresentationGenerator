@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="all" name="FirstUnoContact">
+ 
+	<property name="OFFICE_ROOT" value="/opt/openoffice.org" />
+	<property name="OFFICE_HOME" value="${OFFICE_ROOT}/basis3.4" />
+	<property name="OO_SDK_HOME" value="${OFFICE_HOME}/sdk" />
+	<property name="OO_URE_HOME" value="${OFFICE_ROOT}/ure" />
+ 
+	<target name="init">
+		<property name="OUT_DIR" value="${basedir}/build/" />
+		<!-- For eclipse we need to set the output folder to this path -->
+		<property name="BIN_DIR" value="${basedir}/bin/" />
+	</target>
+ 
+	<path id="office.class.path">
+		<filelist dir="${OFFICE_HOME}/program/classes" files="unoil.jar" />
+		<filelist dir="${OO_URE_HOME}/share/java" files="jurt.jar,ridl.jar,juh.jar,java_uno.jar,unoloader.jar" />
+	</path>
+ 
+	<fileset id="bootstrap.glue.code" dir="${OO_SDK_HOME}/classes">
+		<patternset>
+			<include name="com/sun/star/lib/loader/*.class" />
+		</patternset>
+	</fileset>
+ 
+	<!-- Since the Eclipse IDE has an incremental compiler build in we do not need
+	     to run the >compile< target in this case -->
+	<target name="compile" depends="init" unless="eclipse.running">
+		<mkdir dir="${BIN_DIR}" />
+		<javac debug="true" deprecation="true" destdir="${BIN_DIR}" srcdir=".">
+			<classpath refid="office.class.path" />
+		</javac>
+	</target>
+ 
+	<target name="jar" depends="init,compile">
+		<mkdir dir="${OUT_DIR}" />
+		<jar basedir="${BIN_DIR}" compress="true" jarfile="${OUT_DIR}/OOoPresentationGenerator.jar">
+			<exclude name="**/*.java" />
+			<exclude name="*.jar" />
+			<fileset refid="bootstrap.glue.code" />
+			<manifest>
+				<attribute name="Main-Class" value="com.sun.star.lib.loader.Loader" />
+				<section name="com/sun/star/lib/loader/Loader.class">
+					<attribute name="Application-Class" value="com.bthota.extension.presentation.Generator" />
+				</section>
+			</manifest>
+		</jar>
+	</target>
+ 
+	<target name="all" description="Build everything." depends="init,compile,jar">
+		<echo message="Application built. OOoPresentationGenerator!" />
+	</target>
+ 
+	<target name="run" description="Try running it." depends="all">
+		<java jar="${OUT_DIR}/OOoPresentationGenerator.jar" failonerror="true" fork="true">
+		</java>
+	</target>
+ 
+	<target name="cleanbin" description="Clean all binaries." unless="eclipse.running">
+		<delete>
+			<fileset dir="${BIN_DIR}">
+				<include name="**/*.class" />
+			</fileset>
+		</delete>
+	</target>
+ 
+	<target name="cleanall" description="Clean all build products." depends="init,cleanbin">
+		<delete file="${OUT_DIR}/OOoPresentationGenerator.jar" />
+	</target>
+ 
+</project>
