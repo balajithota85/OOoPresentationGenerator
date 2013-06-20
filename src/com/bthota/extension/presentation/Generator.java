@@ -40,12 +40,40 @@ import com.sun.star.uno.XComponentContext;
 import java.io.File;
 
 public class Generator {
+	public static final String DESKTOP_PACKAGE = "com.sun.star.frame.Desktop";
+	public static final String NEW_IMPRESS_FILE = "private:factory/simpress";
+	public static final String BLANK_FILE = "_blank";
+	public static final String TITLE_TEXT_SHAPE_PACKAGE = "com.sun.star.presentation.TitleTextShape";
+	public static final String SUB_TITLE_TEXT_SHAPE_PACKAGE = "com.sun.star.presentation.SubtitleTextShape";
+	public static final String GRAPHIC_OBJECT_SHAPE_PACKAGE = "com.sun.star.drawing.GraphicObjectShape";
+	public static final String SAMPLE_TITLE = "Title of Presentation";
+	public static final String SAMPLE_SUB_TITLE = "This is a sample\n\n\n\n\t\t\t\t\tBy,\n\t\t\t\t\t\t\t\t  Balaji Thota";
+	public static final String SAMPLE_INPUT_DIRECTORY = "/home/bthota/Desktop/sample";
+	public static final String SAMPLE_OUTPUT_FILE = "/home/bthota/sample.odp";
+	
 	public static void main(String[] args) {
 		try {
+			
+			String inputDirectory = System.getProperty("inputDirectory");
+			String outFileWithPath = System.getProperty("outFileWithPath");;
+			String titleOfPresentation = System.getProperty("titleOfPresentation");;
+			String subTitleOfPresentation = System.getProperty("subTitleOfPresentation");;
+			
+			if(inputDirectory == null || inputDirectory.equals("") || outFileWithPath == null || outFileWithPath.equals("")){
+				System.out.println("came to null condition");
+				return;
+			}
+			
+			titleOfPresentation = (titleOfPresentation == null || titleOfPresentation.equals("")) ? 
+					SAMPLE_TITLE : titleOfPresentation;
+			
+			subTitleOfPresentation = (subTitleOfPresentation == null || subTitleOfPresentation.equals("")) ? 
+					SAMPLE_SUB_TITLE : subTitleOfPresentation;
+			
 			XComponentContext context = Bootstrap.bootstrap();
 			XMultiComponentFactory serviceManager = context.getServiceManager();
 			Object desktop = serviceManager.createInstanceWithContext(
-					"com.sun.star.frame.Desktop", 
+					DESKTOP_PACKAGE, 
 					context);
 			XComponentLoader loader = (XComponentLoader) UnoRuntime.queryInterface(
 					XComponentLoader.class, 
@@ -57,8 +85,8 @@ public class Generator {
 			properties[0].Value = new Boolean(true);
 
 			Object document = loader.loadComponentFromURL(
-					"private:factory/simpress", 
-					"_blank", 
+					NEW_IMPRESS_FILE, 
+					BLANK_FILE, 
 					0, 
 					properties);
 			
@@ -92,14 +120,14 @@ public class Generator {
 					}
 					XShape titleShape = (XShape) UnoRuntime.queryInterface(
 									XShape.class,
-									serviceFactory.createInstance("com.sun.star.presentation.TitleTextShape")
+									serviceFactory.createInstance(TITLE_TEXT_SHAPE_PACKAGE)
 									);
 					titleShape.setSize(new Size(25199, 3506));
 					titleShape.setPosition(new Point(1400, 837));
 
 					XShape subTitleShape = (XShape) UnoRuntime.queryInterface(
 									XShape.class,
-									serviceFactory.createInstance("com.sun.star.presentation.SubtitleTextShape")
+									serviceFactory.createInstance(SUB_TITLE_TEXT_SHAPE_PACKAGE)
 									);
 					subTitleShape.setSize(new Size(24639, 12179));
 					subTitleShape.setPosition(new Point(1400, 4914));
@@ -112,18 +140,18 @@ public class Generator {
 						firstPage.getByIndex(0));
 				XText subTitle = (XText) UnoRuntime.queryInterface(XText.class,
 						firstPage.getByIndex(1));
-				title.setString("Sample Presentation");
-				subTitle.setString("This is a sample\n\n\n\n\t\t\t\t\tBy,\n\t\t\t\t\t\t\t\t  Balaji Thota");
+				title.setString(titleOfPresentation);
+				subTitle.setString(subTitleOfPresentation);
 			}
 
-			File[] files = new File("/home/bthota/Pictures/bthota").listFiles();
+			File[] files = new File(inputDirectory).listFiles();
 			
 			for (File file : files) {
 				if (file.isFile()) {
 					XDrawPage currentPage = pages.insertNewByIndex(pages.getCount());
 					XShape currentTitleShape = (XShape) UnoRuntime.queryInterface(
 									XShape.class,
-									serviceFactory.createInstance("com.sun.star.presentation.TitleTextShape")
+									serviceFactory.createInstance(TITLE_TEXT_SHAPE_PACKAGE)
 									);
 					currentTitleShape.setSize(new Size(25199, 3506));
 					currentTitleShape.setPosition(new Point(1400, 837));
@@ -138,7 +166,7 @@ public class Generator {
 
 					XShape imageShape = (XShape) UnoRuntime.queryInterface(
 									XShape.class,
-									serviceFactory.createInstance("com.sun.star.drawing.GraphicObjectShape")
+									serviceFactory.createInstance(GRAPHIC_OBJECT_SHAPE_PACKAGE)
 									);
 
 					imageShape.setSize(new Size(24639, 12179));
@@ -149,13 +177,12 @@ public class Generator {
 							imageShape);
 
 					xPropertySet.setPropertyValue("GraphicURL", "file://"+ file.getAbsolutePath());
-
 					currentPage.add(imageShape);
 				}
 			}
 
 			XStorable store = (XStorable) UnoRuntime.queryInterface(XStorable.class, document);
-			store.storeAsURL("file:///home/bthota/sample.odp", null);
+			store.storeAsURL("file://"+outFileWithPath, null);
 		} catch (BootstrapException e) {
 			e.printStackTrace();
 		} catch (Exception e) {

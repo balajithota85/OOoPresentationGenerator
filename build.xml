@@ -5,6 +5,10 @@
 	<property name="OFFICE_HOME" value="${OFFICE_ROOT}/basis3.4" />
 	<property name="OO_SDK_HOME" value="${OFFICE_HOME}/sdk" />
 	<property name="OO_URE_HOME" value="${OFFICE_ROOT}/ure" />
+	<property name="inputDirectory" value="/home/bthota/Pictures/bthota" />
+	<property name="outFileWithPath" value="/home/bthota/Desktop/output.odp" />
+	<property name="titleOfPresentation" value="Manali Trip" />
+	<property name="subTitleOfPresentation" value="My happy moments" />
  
 	<target name="init">
 		<property name="OUT_DIR" value="${basedir}/build/" />
@@ -53,6 +57,10 @@
  
 	<target name="run" description="Try running it." depends="all">
 		<java jar="${OUT_DIR}/OOoPresentationGenerator.jar" failonerror="true" fork="true">
+			<sysproperty key="inputDirectory" value="${inputDirectory}"/>
+			<sysproperty key="outFileWithPath" value="${outFileWithPath}"/>
+			<sysproperty key="titleOfPresentation" value="${titleOfPresentation}"/>
+			<sysproperty key="subTitleOfPresentation" value="${subTitleOfPresentation}"/>
 		</java>
 	</target>
  
