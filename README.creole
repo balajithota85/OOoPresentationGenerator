@@ -1,5 +1,3 @@
-LibreOffie/OpenOffice.org extension for generating presentation from a folder containing images.
-
 = OOoPresentation Generator
 
 LibreOffie/OpenOffice.org extension for generating presentation from a folder containing images.
